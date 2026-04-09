@@ -6,6 +6,8 @@ import 'pages/register_page.dart';
 import 'pages/score_page.dart';
 import 'pages/statistics_page.dart';
 import 'pages/settings_page.dart';
+import 'pages/profile_edit_page.dart';
+import 'pages/add_entry_page.dart';
 
 
 // --- 2. Import Shared Widgets (สีและดีไซน์หลัก) ---
@@ -37,7 +39,9 @@ class MyApp extends StatelessWidget {
         '/register': (context) => const RegisterPage(),      
         '/score': (context) => const ScorePage(), 
         '/statistics': (context) => const StatisticsPage(),  
-        '/settings': (context) => const SettingsPage(),          
+        '/settings': (context) => const SettingsPage(), 
+        '/profile_edit': (context) => const ProfileEditPage(), 
+        '/add_entry': (context) => const AddEntryPage(),         
       },
     );
   }

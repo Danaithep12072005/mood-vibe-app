@@ -11,12 +11,14 @@ class CustomTextField extends StatelessWidget {
   final String label;
   final String hint;
   final IconData icon;
+  final TextEditingController? controller; // 📍 เพิ่มตัวแปร controller
 
   const CustomTextField({
     super.key,
     required this.label,
     required this.hint,
     required this.icon,
+    this.controller, // 📍 รับค่า controller เข้ามา
   });
 
   @override
@@ -54,6 +56,7 @@ class CustomTextField extends StatelessWidget {
               const SizedBox(width: 16),
               Expanded(
                 child: TextFormField(
+                  controller: controller, // 📍 เอา controller มาผูกกับกล่องข้อความ
                   decoration: InputDecoration(
                     hintText: hint,
                     hintStyle: TextStyle(

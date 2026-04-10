@@ -1,8 +1,13 @@
 import 'package:flutter/material.dart';
 import '../utils/shared_widgets.dart';
+import 'package:firebase_auth/firebase_auth.dart';
 
 class RegisterPage extends StatelessWidget {
-  const RegisterPage({super.key});
+  // 📍 แก้ไข 1: ลบคำว่า const ออกจากบรรทัดนี้
+  RegisterPage({super.key}); 
+
+  final emailController = TextEditingController();
+  final passwordController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -53,23 +58,46 @@ class RegisterPage extends StatelessWidget {
                     ),
                   ),
                   const SizedBox(height: 35),
-                  const CustomTextField(
+                  // 📍 แก้ไข 2: เพิ่ม controller เข้าไปผูกกับกล่องข้อความ
+                  CustomTextField(
                     label: 'อีเมล',
                     hint: 'กรอกอีเมลของคุณ',
                     icon: Icons.email_outlined,
+                    controller: emailController, 
                   ),
                   const SizedBox(height: 25),
-                  const CustomTextField(
+                  // 📍 แก้ไข 3: เพิ่ม controller เข้าไปผูกกับกล่องข้อความ
+                  CustomTextField(
                     label: 'รหัสผ่าน',
                     hint: 'กรอกรหัสผ่าน...',
                     icon: Icons.lock_outline_rounded,
+                    controller: passwordController, 
                   ),
                   const SizedBox(height: 45),
+                  // 📍 แก้ไข 4: ใส่ระบบ Firebase ลงในปุ่มสมัครสมาชิก
                   CustomButton(
                     text: 'สมัครสมาชิก',
-                    onPressed: () {
-                      // สมมติว่าสมัครเสร็จแล้ว นำทางไปหน้า Score
-                      Navigator.pushNamedAndRemoveUntil(context, '/score', (route) => false);
+                    onPressed: () async {
+                      try {
+                        // สั่งให้ Firebase สร้างบัญชีใหม่
+                        await FirebaseAuth.instance.createUserWithEmailAndPassword(
+                          email: emailController.text.trim(),
+                          password: passwordController.text.trim(),
+                        );
+                        
+                        // สมัครเสร็จแล้ว นำทางไปหน้า Score
+                        if (context.mounted) {
+                          Navigator.pushNamedAndRemoveUntil(context, '/score', (route) => false);
+                        }
+
+                      } on FirebaseAuthException catch (e) {
+                        // ถ้าเกิด Error (เช่น อีเมลซ้ำ) ให้มีแถบแจ้งเตือนเด้งขึ้นมา
+                        if (context.mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(content: Text('เกิดข้อผิดพลาด: ${e.message}')),
+                          );
+                        }
+                      }
                     },
                   ),
                   const SizedBox(height: 40),

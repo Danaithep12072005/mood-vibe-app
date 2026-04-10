@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "389288165312",
+    "project_id": "moodvibe-f59af",
+    "storage_bucket": "moodvibe-f59af.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:389288165312:android:41a01db28bc26e51cf9225",
+        "android_client_info": {
+          "package_name": "com.example.mood_vibe"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAMjpJexp_rUn8fzqmwyIC2AjhL7uElhAU"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

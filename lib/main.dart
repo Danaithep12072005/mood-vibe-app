@@ -12,21 +12,25 @@ import 'pages/profile_edit_page.dart';
 import 'pages/add_entry_page.dart';
 import 'pages/emotion_detail_page.dart';
 import 'pages/ai_chat_page.dart';
+import 'services/spotify_service.dart'; // 📍 เช็คชื่อโฟลเดอร์ให้ตรงกับที่คุณสร้างไว้นะครับ
 
 // --- 2. Import Shared Widgets (สีและดีไซน์หลัก) ---
 import 'utils/shared_widgets.dart'; 
 
 void main() async {
-  // 1. บอกให้ Flutter เตรียมตัวให้พร้อมก่อนเปิดแอป
+  // 1. บอกให้ Flutter เตรียมตัวให้พร้อม
   WidgetsFlutterBinding.ensureInitialized();
-  
+
   // 2. ปลุก Firebase ให้ตื่นขึ้นมาทำงาน
   await Firebase.initializeApp(
     options: DefaultFirebaseOptions.currentPlatform,
   );
 
-  // 3. สั่งรันแอปพลิเคชันของคุณ
-  runApp(const MyApp()); 
+  // 3. 📍 เพิ่มตรงนี้: ปลุกระบบ Spotify ให้พร้อมใช้งาน
+  SpotifyService.initialize();
+
+  // 4. สั่งรันแอปพลิเคชันของคุณ
+  runApp(const MyApp());
 }
 
 class MyApp extends StatelessWidget {

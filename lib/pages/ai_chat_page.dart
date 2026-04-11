@@ -1,6 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:google_generative_ai/google_generative_ai.dart'; 
 import '../utils/shared_widgets.dart';
+// 📍 เพิ่มการ Import Service และหน้าเล่นเพลง
+import '../services/spotify_service.dart';
+import 'music_player_page.dart';
 
 class AiChatPage extends StatefulWidget {
   const AiChatPage({super.key});
@@ -15,7 +18,7 @@ class _AiChatPageState extends State<AiChatPage> {
 
   List<Map<String, dynamic>> messages = [];
   bool isAiTyping = false; 
-  bool _isInitialMessageSent = false; // ตัวเช็คว่าเคยส่งข้อความอัตโนมัติไปหรือยัง
+  bool _isInitialMessageSent = false; 
   
   late final GenerativeModel _model;
   late final ChatSession _chat;
@@ -23,10 +26,13 @@ class _AiChatPageState extends State<AiChatPage> {
   @override
   void initState() {
     super.initState();
-    final apiKey = 'AIzaSyDS3FzEsk5HRKcWdGFAXYrKwPFnF3gYWbo'; 
+    // 📍 เรียกใช้งาน Spotify Service ตั้งแต่เริ่มหน้าหน้าจอ
+    SpotifyService.initialize();
+
+    final apiKey = 'AIzaSyC7HK2fQo0FFhtp4ESXlLTALC-phezeuaY'; 
 
     _model = GenerativeModel(
-      model: 'gemini-1.5-flash',
+      model: 'gemini-2.5-flash',
       apiKey: apiKey,
       systemInstruction: Content.system(
         'คุณคือ MoodVibe ผู้ให้คำปรึกษาด้านสุขภาพจิตใจสำหรับนักศึกษาวัยรุ่น '
@@ -38,24 +44,17 @@ class _AiChatPageState extends State<AiChatPage> {
     _chat = _model.startChat();
   }
 
-  // 📍 2. ฟังก์ชันรับข้อมูลจากหน้าก่อนหน้า พอเปิดหน้านี้ปุ๊บ จะดึงมาเช็คทันที
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    
-    // ถ้ายังไม่เคยส่งข้อความอัตโนมัติ ให้ดึงข้อมูลมาส่ง
     if (!_isInitialMessageSent) {
       final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
-      
       if (args != null) {
         String topic = args['topic'] ?? '';
         String detail = args['detail'] ?? '';
         
-        // ถ้าผู้ใช้มีการพิมพ์หัวข้อหรือรายละเอียดมา
         if (topic.isNotEmpty || detail.isNotEmpty) {
           _isInitialMessageSent = true;
-          
-          // จัดรูปแบบข้อความที่จะส่งให้ AI
           String prompt = '';
           if (topic.isNotEmpty && detail.isNotEmpty) {
             prompt = 'วันนี้ฉันรู้สึกไม่ค่อยโอเคเรื่อง: "$topic"\nรายละเอียดคือ: $detail';
@@ -64,8 +63,6 @@ class _AiChatPageState extends State<AiChatPage> {
           } else {
             prompt = 'วันนี้ฉันรู้สึก: $detail';
           }
-          
-          // รอให้หน้าจอโหลดเสร็จแป๊บนึง แล้วค่อยสั่ง AI พิมพ์อัตโนมัติ
           WidgetsBinding.instance.addPostFrameCallback((_) {
             _sendMessage(autoMessage: prompt);
           });
@@ -74,16 +71,13 @@ class _AiChatPageState extends State<AiChatPage> {
     }
   }
 
-  // 📍 3. ปรับฟังก์ชันส่งข้อความ ให้รองรับการส่งอัตโนมัติ (autoMessage)
   Future<void> _sendMessage({String? autoMessage}) async {
-    // ถ้าเป็นข้อความอัตโนมัติให้ใช้ autoMessage ถ้าพิมพ์เองให้ใช้ _textController
     String userText = autoMessage ?? _textController.text; 
-    
     if (userText.trim().isEmpty) return;
 
     setState(() {
-      messages.add({'sender': 'user', 'text': userText, 'hasMusic': false});
-      if (autoMessage == null) _textController.clear(); // ล้างกล่องข้อความเฉพาะตอนพิมพ์เอง
+      messages.add({'sender': 'user', 'text': userText, 'hasMusic': false, 'musicTag': ''});
+      if (autoMessage == null) _textController.clear(); 
       isAiTyping = true; 
     });
 
@@ -92,11 +86,16 @@ class _AiChatPageState extends State<AiChatPage> {
     try {
       final response = await _chat.sendMessage(Content.text(userText));
       String aiText = response.text ?? 'ขออภัยครับ ระบบประมวลผลมีปัญหาเล็กน้อย';
-      bool showMusic = false;
+      
+      String detectedTag = '';
+      if (aiText.contains('[SAD]')) detectedTag = 'SAD';
+      else if (aiText.contains('[STRESS]')) detectedTag = 'STRESS';
+      else if (aiText.contains('[CHILL]')) detectedTag = 'CHILL';
+      else if (aiText.contains('[HAPPY]')) detectedTag = 'HAPPY';
 
-      if (aiText.contains('[SAD]') || aiText.contains('[STRESS]') || 
-          aiText.contains('[CHILL]') || aiText.contains('[HAPPY]')) {
-        showMusic = true;
+      bool showMusic = detectedTag.isNotEmpty;
+
+      if (showMusic) {
         aiText = aiText.replaceAll('[SAD]', '').replaceAll('[STRESS]', '')
                        .replaceAll('[CHILL]', '').replaceAll('[HAPPY]', '').trim();
       }
@@ -108,15 +107,23 @@ class _AiChatPageState extends State<AiChatPage> {
             'sender': 'ai',
             'text': aiText,
             'hasMusic': showMusic, 
+            'musicTag': detectedTag, 
           });
         });
         _scrollToBottom();
       }
     } catch (e) {
+      print('🔴 AI Error: $e'); 
+
       if (mounted) {
         setState(() {
           isAiTyping = false;
-          messages.add({'sender': 'ai', 'text': 'ขออภัยครับ ตอนนี้ผมกำลังเชื่อมต่อระบบไม่ได้ ลองตรวจสอบอินเทอร์เน็ตดูนะครับ', 'hasMusic': false});
+          messages.add({
+            'sender': 'ai', 
+            'text': 'ขออภัยครับ ตอนนี้ผมกำลังเชื่อมต่อระบบไม่ได้ ลองตรวจสอบอินเทอร์เน็ตดูนะครับ', 
+            'hasMusic': false, 
+            'musicTag': ''
+          });
         });
         _scrollToBottom();
       }
@@ -193,7 +200,7 @@ class _AiChatPageState extends State<AiChatPage> {
                   padding: const EdgeInsets.only(bottom: 20),
                   child: msg['sender'] == 'user'
                       ? _buildUserMessage(msg['text'])
-                      : _buildAiMessageWithMusic(msg['text'], showMusic: msg['hasMusic'] ?? false),
+                      : _buildAiMessageWithMusic(msg['text'], showMusic: msg['hasMusic'] ?? false, musicTag: msg['musicTag'] ?? ''),
                 );
               },
             ),
@@ -271,7 +278,33 @@ class _AiChatPageState extends State<AiChatPage> {
     );
   }
 
-  Widget _buildAiMessageWithMusic(String text, {bool showMusic = false}) {
+  Widget _buildAiMessageWithMusic(String text, {bool showMusic = false, String musicTag = ''}) {
+    
+    // 📍 ข้อมูลเบื้องต้นสำหรับโชว์ใน Chat (รูปภาพยังใช้ของเดิมได้ครับ)
+    Map<String, Map<String, String>> uiDisplayData = {
+      'SAD': {
+        'title': 'Sad Indie (เศร้า)',
+        'image': 'https://images.unsplash.com/photo-1516589178581-6cd7833ae3b2?w=500', 
+      },
+      'STRESS': {
+        'title': 'Peaceful Piano (ผ่อนคลาย)',
+        'image': 'https://images.unsplash.com/photo-1448375240586-882707db888b?w=500', 
+      },
+      'CHILL': {
+        'title': 'Chill Vibes (ชิลล์ๆ)',
+        'image': 'https://images.unsplash.com/photo-1529156069898-49953eb1b5ae?w=500', 
+      },
+      'HAPPY': {
+        'title': 'Mood Booster (สดใส)',
+        'image': 'https://images.unsplash.com/photo-1534152815023-e6ebecf5eb9f?w=500', 
+      },
+    };
+
+    final displayInfo = uiDisplayData[musicTag] ?? {
+      'title': 'เพลงโปรดของคุณ',
+      'image': 'https://images.unsplash.com/photo-1493225457284-0bf53ce815fc?w=500',
+    };
+
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -297,36 +330,80 @@ class _AiChatPageState extends State<AiChatPage> {
                 
                 if (showMusic) ...[
                   const SizedBox(height: 15),
-                  Container(
-                    height: 140, width: double.infinity,
-                    decoration: BoxDecoration(
-                      borderRadius: BorderRadius.circular(15),
-                      image: const DecorationImage(image: NetworkImage('https://images.unsplash.com/photo-1493225457284-0bf53ce815fc?w=500'), fit: BoxFit.cover),
-                    ),
-                    child: Stack(
-                      children: [
-                        Container(decoration: BoxDecoration(borderRadius: BorderRadius.circular(15), color: Colors.black.withOpacity(0.3))),
-                        const Positioned(
-                          top: 15, left: 15,
-                          child: Row(children: [Icon(Icons.music_note, color: Colors.white, size: 16), SizedBox(width: 5), Text('เพลย์ลิสต์: ฮีลใจวัยเรียน', style: TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold))]),
-                        ),
-                        Center(child: Container(padding: const EdgeInsets.all(10), decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle), child: const Icon(Icons.play_arrow, color: moodVibeDarkBrown, size: 30))),
-                        Positioned(
-                          bottom: 15, left: 15, right: 15,
-                          child: Row(
-                            children: [
-                              const Text('25:00', style: TextStyle(color: Colors.white, fontSize: 10)),
-                              const SizedBox(width: 10),
+                  // 📍 ปรับปรุงส่วนการกด (OnTap) เพื่อไปยังหน้า MusicPlayerPage
+                  GestureDetector(
+                    onTap: () async {
+  // 1. แจ้งเตือนผู้ใช้นิดนึงว่ากำลังโหลดเพลง
+  ScaffoldMessenger.of(context).showSnackBar(
+    const SnackBar(content: Text('กำลังเตรียมเพลงฮีลใจให้คุณ...'), duration: Duration(seconds: 1)),
+  );
+
+  // 2. ไปดึงข้อมูลเพลงจริงจาก Spotify ผ่าน Service ที่เราสร้างไว้
+  final track = await SpotifyService.searchMoodTrack(musicTag);
+
+  if (track != null && mounted) {
+    // 3. ถ้าเจอเพลง ให้เด้งไปหน้าเครื่องเล่นเพลงสีเขียวทันที
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => MusicPlayerPage(
+          trackName: track.name ?? 'Unknown Track',
+          artistName: track.artists?.first.name ?? 'Unknown Artist',
+          imageUrl: track.album?.images?.first.url ?? displayInfo['image']!,
+          previewUrl: track.previewUrl, // 🎵 ส่งลิงก์เสียงไปเล่นในเครื่อง
+        ),
+      ),
+    );
+  } else {
+    // กรณีที่หาเพลงไม่เจอ หรือ API มีปัญหา
+    print('🔴 ไม่พบเพลงจาก Spotify หรือลืมใส่ Client ID/Secret');
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(content: Text('ขออภัยครับ ไม่สามารถโหลดเพลงได้ในขณะนี้')),
+    );
+  }
+},
+                    child: Container(
+                      height: 140, width: double.infinity,
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(15),
+                        image: DecorationImage(image: NetworkImage(displayInfo['image']!), fit: BoxFit.cover),
+                        boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.2), blurRadius: 5, offset: const Offset(0, 3))],
+                      ),
+                      child: Stack(
+                        children: [
+                          Container(decoration: BoxDecoration(borderRadius: BorderRadius.circular(15), color: Colors.black.withOpacity(0.4))),
+                          Positioned(
+                            top: 15, left: 15, right: 15,
+                            child: Row(children: [
+                              const Icon(Icons.headphones, color: Colors.white, size: 16), 
+                              const SizedBox(width: 5), 
                               Expanded(
-                                child: Container(
-                                  height: 3, decoration: BoxDecoration(color: Colors.white.withOpacity(0.5), borderRadius: BorderRadius.circular(2)),
-                                  child: Row(children: [Container(width: 60, decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(2))), Container(width: 8, height: 8, decoration: const BoxDecoration(color: Colors.white, shape: BoxShape.circle))]),
+                                child: Text(
+                                  'AI แนะนำ: ${displayInfo['title']}', 
+                                  style: const TextStyle(color: Colors.white, fontSize: 12, fontWeight: FontWeight.bold),
+                                  overflow: TextOverflow.ellipsis,
                                 ),
-                              ),
-                            ],
+                              )
+                            ]),
                           ),
-                        ),
-                      ],
+                          Center(
+                            child: Container(
+                              padding: const EdgeInsets.all(10), 
+                              decoration: const BoxDecoration(color: Color(0xFF1DB954), shape: BoxShape.circle), 
+                              child: const Icon(Icons.play_arrow, color: Colors.white, size: 30)
+                            )
+                          ),
+                          Positioned(
+                            bottom: 15, left: 15, right: 15,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                const Text('แตะเพื่อเริ่มฟังเพลงฮีลใจ', style: TextStyle(color: Colors.white70, fontSize: 11, fontWeight: FontWeight.w500)),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ),
                 ],

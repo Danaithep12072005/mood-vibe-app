@@ -10,7 +10,8 @@ import 'pages/statistics_page.dart';
 import 'pages/settings_page.dart';
 import 'pages/profile_edit_page.dart';
 import 'pages/add_entry_page.dart';
-
+import 'pages/emotion_detail_page.dart';
+import 'pages/ai_chat_page.dart';
 
 // --- 2. Import Shared Widgets (สีและดีไซน์หลัก) ---
 import 'utils/shared_widgets.dart'; 
@@ -52,7 +53,9 @@ class MyApp extends StatelessWidget {
         '/statistics': (context) => const StatisticsPage(),  
         '/settings': (context) => const SettingsPage(), 
         '/profile_edit': (context) => const ProfileEditPage(), 
-        '/add_entry': (context) => const AddEntryPage(),         
+        '/add_entry': (context) => const AddEntryPage(),  
+        '/emotion_detail': (context) => const EmotionDetailPage(),
+      '/ai_chat': (context) => const AiChatPage(),       
       },
     );
   }

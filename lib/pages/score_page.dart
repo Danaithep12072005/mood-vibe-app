@@ -153,7 +153,7 @@ class ScorePage extends StatelessWidget {
                 IconButton(
                   icon: Icon(
                     Icons.chat_bubble_outline_rounded,
-                    color: moodVibeDarkBrown.withOpacity(0.5),
+                    color: moodVibeDarkBrown.withValues(alpha: 0.5), // 📍 เปลี่ยนเป็น withValues
                     size: 28,
                   ),
                   onPressed: () {
@@ -168,7 +168,7 @@ class ScorePage extends StatelessWidget {
                 IconButton(
                   icon: Icon(
                     Icons.analytics_outlined,
-                    color: moodVibeDarkBrown.withOpacity(0.5),
+                    color: moodVibeDarkBrown.withValues(alpha: 0.5), // 📍 เปลี่ยนเป็น withValues
                     size: 28,
                   ),
                   onPressed: () {
@@ -180,7 +180,7 @@ class ScorePage extends StatelessWidget {
                 IconButton(
                   icon: Icon(
                     Icons.person_outline_rounded,
-                    color: moodVibeDarkBrown.withOpacity(0.5),
+                    color: moodVibeDarkBrown.withValues(alpha: 0.5), // 📍 เปลี่ยนเป็น withValues
                     size: 28,
                   ),
                   onPressed: () {

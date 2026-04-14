@@ -11,14 +11,14 @@ class CustomTextField extends StatelessWidget {
   final String label;
   final String hint;
   final IconData icon;
-  final TextEditingController? controller; // 📍 เพิ่มตัวแปร controller
+  final TextEditingController? controller;
 
   const CustomTextField({
     super.key,
     required this.label,
     required this.hint,
     required this.icon,
-    this.controller, // 📍 รับค่า controller เข้ามา
+    this.controller,
   });
 
   @override
@@ -42,7 +42,7 @@ class CustomTextField extends StatelessWidget {
             borderRadius: BorderRadius.circular(30),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.05),
+                color: Colors.black.withValues(alpha: 0.05), // 📍 แก้ไขจุดนี้
                 spreadRadius: 1,
                 blurRadius: 10,
                 offset: const Offset(0, 5),
@@ -52,15 +52,15 @@ class CustomTextField extends StatelessWidget {
           padding: const EdgeInsets.symmetric(horizontal: 20),
           child: Row(
             children: [
-              Icon(icon, color: moodVibeDarkBrown.withOpacity(0.5)),
+              Icon(icon, color: moodVibeDarkBrown.withValues(alpha: 0.5)), // 📍 แก้ไขจุดนี้
               const SizedBox(width: 16),
               Expanded(
                 child: TextFormField(
-                  controller: controller, // 📍 เอา controller มาผูกกับกล่องข้อความ
+                  controller: controller,
                   decoration: InputDecoration(
                     hintText: hint,
                     hintStyle: TextStyle(
-                        color: moodVibeDarkBrown.withOpacity(0.4),
+                        color: moodVibeDarkBrown.withValues(alpha: 0.4), // 📍 แก้ไขจุดนี้
                         fontSize: 16),
                     border: InputBorder.none,
                   ),
@@ -146,10 +146,10 @@ class MoodVibeLogo extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Image.network(
-      'https://moodvibe.app/images/moodvibe_logo.png', // เปลี่ยนเป็น Image.asset เมื่อมีรูปจริง
+      'https://moodvibe.app/images/moodvibe_logo.png',
       height: 60,
       color: moodVibeCream,
-      errorBuilder: (context, error, stackTrace) => const Icon(Icons.spa, color: moodVibeCream, size: 60), // กรณีโหลดรูปไม่ขึ้น
+      errorBuilder: (context, error, stackTrace) => const Icon(Icons.spa, color: moodVibeCream, size: 60),
     );
   }
 }

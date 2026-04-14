@@ -151,13 +151,13 @@ class _AddEntryPageState extends State<AddEntryPage> {
           width: 150,
           height: 150,
           decoration: BoxDecoration(
-            color: Colors.black.withOpacity(0.15), // วงกลมพื้นหลังโปร่งแสง
+            color: Colors.black.withValues(alpha: 0.15), // 📍 เปลี่ยนจาก withOpacity เป็น withValues // วงกลมพื้นหลังโปร่งแสง
             shape: BoxShape.circle,
           ),
           child: Icon(
             mood['icon'],
             size: 100,
-            color: Colors.black.withOpacity(0.6), // สีหน้าไอคอน
+            color: Colors.black.withValues(alpha: 0.6), // สีหน้าไอคอน
           ),
         ),
         const SizedBox(height: 30),
@@ -187,7 +187,7 @@ class _AddEntryPageState extends State<AddEntryPage> {
           Container(
             height: 4,
             margin: const EdgeInsets.symmetric(horizontal: 10, vertical: 18),
-            color: Colors.black.withOpacity(0.1),
+            color: Colors.black.withValues(alpha: 0.1),
           ),
           // จุดวงกลมทั้ง 5
           Row(
@@ -211,7 +211,7 @@ class _AddEntryPageState extends State<AddEntryPage> {
                     width: 20,
                     height: 20,
                     decoration: BoxDecoration(
-                      color: isActive ? Colors.white : Colors.black.withOpacity(0.2),
+                      color: isActive ? Colors.white : Colors.black.withValues(alpha: 0.2),
                       shape: BoxShape.circle,
                       border: Border.all(
                         color: isActive ? Colors.white : Colors.transparent,

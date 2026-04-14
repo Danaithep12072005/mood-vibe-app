@@ -36,7 +36,7 @@ class StatisticsPage extends StatelessWidget {
               const SizedBox(height: 8),
               Text(
                 'ภาพรวมอารมณ์ของคุณใน 14 วันที่ผ่านมา',
-                style: TextStyle(fontSize: 14, color: moodVibeDarkBrown.withOpacity(0.7)),
+                style: TextStyle(fontSize: 14, color: moodVibeDarkBrown.withValues(alpha: 0.7)), // 📍 แก้ไขจุดนี้
               ),
               const SizedBox(height: 20),
               
@@ -60,7 +60,12 @@ class StatisticsPage extends StatelessWidget {
                     decoration: BoxDecoration(
                       color: Colors.white,
                       borderRadius: BorderRadius.circular(20),
-                      boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 5)],
+                      boxShadow: [
+                        BoxShadow(
+                          color: Colors.black.withValues(alpha: 0.05), // 📍 แก้ไขจุดนี้
+                          blurRadius: 5
+                        )
+                      ],
                     ),
                     child: const Row(
                       children: [
@@ -81,7 +86,13 @@ class StatisticsPage extends StatelessWidget {
                 decoration: BoxDecoration(
                   color: Colors.white,
                   borderRadius: BorderRadius.circular(24),
-                  boxShadow: [BoxShadow(color: Colors.black.withOpacity(0.05), blurRadius: 10, offset: const Offset(0, 5))],
+                  boxShadow: [
+                    BoxShadow(
+                      color: Colors.black.withValues(alpha: 0.05), // 📍 แก้ไขจุดนี้
+                      blurRadius: 10, 
+                      offset: const Offset(0, 5)
+                    )
+                  ],
                 ),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
@@ -90,7 +101,7 @@ class StatisticsPage extends StatelessWidget {
                     const SizedBox(height: 20),
                     // ไอคอนแว่นขยาย Pixel
                     Image.network(
-                      'https://moodvibe.app/images/pixel_search.png', // เปลี่ยนเป็นรูปแว่นขยายของคุณ
+                      'https://moodvibe.app/images/pixel_search.png', 
                       height: 60,
                       errorBuilder: (context, error, stackTrace) => const Icon(Icons.search, size: 60, color: Colors.grey),
                     ),
@@ -122,7 +133,6 @@ class StatisticsPage extends StatelessWidget {
           ),
         ),
       ),
-      // แถบนำทางด้านล่าง (คัดลอกรูปแบบมาจาก Score Page แต่เปลี่ยนไอคอน Active)
       bottomNavigationBar: _buildBottomNavigationBar(context),
     );
   }
@@ -137,13 +147,23 @@ class StatisticsPage extends StatelessWidget {
           decoration: const BoxDecoration(
             color: moodVibeCream,
             borderRadius: BorderRadius.only(topLeft: Radius.circular(40), topRight: Radius.circular(40)),
-            boxShadow: [BoxShadow(color: Colors.black12, spreadRadius: 1, blurRadius: 15, offset: Offset(0, -5))],
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black12, 
+                spreadRadius: 1, 
+                blurRadius: 15, 
+                offset: Offset(0, -5)
+              )
+            ],
           ),
           child: Row(
             mainAxisAlignment: MainAxisAlignment.spaceEvenly,
             children: [
-              IconButton(icon: Icon(Icons.home_outlined, color: moodVibeDarkBrown.withOpacity(0.5), size: 28), onPressed: () => Navigator.pushReplacementNamed(context, '/score')),
-              Icon(Icons.chat_bubble_outline_rounded, color: moodVibeDarkBrown.withOpacity(0.5), size: 28),
+              IconButton(
+                icon: Icon(Icons.home_outlined, color: moodVibeDarkBrown.withValues(alpha: 0.5), size: 28), // 📍 แก้ไขจุดนี้
+                onPressed: () => Navigator.pushReplacementNamed(context, '/score')
+              ),
+              Icon(Icons.chat_bubble_outline_rounded, color: moodVibeDarkBrown.withValues(alpha: 0.5), size: 28), // 📍 แก้ไขจุดนี้
               const SizedBox(width: 40),
               // Analytics Active
               Column(
@@ -154,14 +174,20 @@ class StatisticsPage extends StatelessWidget {
                   Container(height: 5, width: 5, decoration: const BoxDecoration(color: moodVibeDarkBrown, shape: BoxShape.circle)),
                 ],
               ),
-              IconButton(icon: Icon(Icons.person_outline_rounded, color: moodVibeDarkBrown.withOpacity(0.5), size: 28), onPressed: () => Navigator.pushNamed(context, '/settings')),
+              IconButton(
+                icon: Icon(Icons.person_outline_rounded, color: moodVibeDarkBrown.withValues(alpha: 0.5), size: 28), // 📍 แก้ไขจุดนี้
+                onPressed: () => Navigator.pushNamed(context, '/settings')
+              ),
             ],
           ),
         ),
         Positioned(
           top: -20,
           child: FloatingActionButton(
-            onPressed: () {},
+            onPressed: () {
+              // 📍 แนะนำให้เชื่อมไปหน้าบันทึกอารมณ์เหมือนหน้าอื่นๆ
+              Navigator.pushNamed(context, '/add_entry');
+            },
             backgroundColor: moodVibeOlive,
             elevation: 4,
             shape: const CircleBorder(),

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../services/api_service.dart'; // 📍 นำเข้า ApiService ของเรา
+import '../services/api_service.dart'; // 📍 นำเข้า API ของเรา
 import '../utils/shared_widgets.dart';
 
 class EmotionDetailPage extends StatefulWidget {

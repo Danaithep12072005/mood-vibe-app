@@ -2,8 +2,8 @@ import 'package:http/http.dart' as http;
 import 'dart:convert';
 
 class ApiService {
-  // 📍 สูตรลับ 10.0.2.2 ทะลุ Emulator ไปหาพอร์ต 3000 ของ Node.js
-  static const String baseUrl = 'http://10.0.2.2:3000/api';
+  // 📍 แก้ไข: เติม http:// และ :3000/api ให้ครบ ฟังก์ชันถึงจะยิงทะลุไปหา Node.js ได้
+  static const String baseUrl = 'http://172.16.0.2:3000/api';
 
   // 🌟 ฟังก์ชันดึงข้อมูลอารมณ์ทั้งหมด
   static Future<List<dynamic>> fetchMoods() async {

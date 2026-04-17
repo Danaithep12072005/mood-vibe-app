@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_core/firebase_core.dart'; 
+import 'firebase_options.dart'; 
 import 'pages/sign_in_page.dart';
 import 'pages/score_page.dart';
 import 'pages/statistics_page.dart';
@@ -8,10 +10,13 @@ import 'pages/add_entry_page.dart';
 import 'pages/emotion_detail_page.dart';
 import 'pages/ai_chat_page.dart';
 import 'pages/register_page.dart';
-import 'utils/shared_widgets.dart';
+import 'pages/edit_mood_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
+  await Firebase.initializeApp(
+    options: DefaultFirebaseOptions.currentPlatform,
+  );
   runApp(const MyApp());
 }
 
@@ -25,7 +30,7 @@ class MyApp extends StatelessWidget {
       title: 'MoodVibe',
       theme: ThemeData(
         fontFamily: 'Prompt', 
-        scaffoldBackgroundColor: moodVibeCream,
+        scaffoldBackgroundColor: const Color(0xFFFDFCF1),
       ),
       home: SignInPage(), 
       routes: {
@@ -38,6 +43,7 @@ class MyApp extends StatelessWidget {
         '/statistics': (context) => const StatisticsPage(),
         '/settings': (context) => const SettingsPage(),
         '/profile_edit': (context) => const ProfileEditPage(),
+        '/edit_mood': (context) => const EditMoodPage(),
       },
     );
   }

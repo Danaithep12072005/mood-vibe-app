@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import '../services/api_service.dart';
 import '../utils/shared_widgets.dart';
 
 class ProfileEditPage extends StatefulWidget {
@@ -12,6 +13,23 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
   String selectedGender = 'ชาย'; 
   final TextEditingController passwordController = TextEditingController();
   final TextEditingController dobController = TextEditingController();
+
+  @override
+  void initState() {
+    super.initState();
+    _loadProfileData();
+  }
+
+  // ดึงข้อมูลวันเกิดและเพศที่เคยบันทึกไว้
+  void _loadProfileData() async {
+    final profile = await ApiService.getUserProfile();
+    if (profile != null) {
+      setState(() {
+        dobController.text = profile['dob'] ?? '';
+        selectedGender = profile['gender'] ?? 'ชาย';
+      });
+    }
+  }
 
   Future<void> _selectDate() async {
     DateTime? pickedDate = await showDatePicker(
@@ -33,9 +51,26 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
     }
   }
 
-  void _saveProfile() {
-    ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('บันทึกข้อมูลส่วนตัวเรียบร้อย!'), backgroundColor: moodVibeOlive));
-    Navigator.pop(context);
+  void _saveProfile() async {
+    // 📍 1. ถ้ามีการพิมพ์รหัสผ่านใหม่ ให้ทำการเปลี่ยนรหัส
+    if (passwordController.text.isNotEmpty) {
+      if (passwordController.text.length < 6) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('รหัสผ่านต้องมีอย่างน้อย 6 ตัวอักษร'), backgroundColor: Colors.orange));
+        return;
+      }
+      await ApiService.updatePassword(passwordController.text);
+    }
+
+    // 📍 2. บันทึกวันเกิดและเพศลง Firestore
+    bool success = await ApiService.updateUserProfile(
+      dob: dobController.text,
+      gender: selectedGender,
+    );
+
+    if (success && mounted) {
+      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('บันทึกข้อมูลส่วนตัวเรียบร้อย!'), backgroundColor: moodVibeOlive));
+      Navigator.pop(context);
+    }
   }
 
   @override
@@ -67,9 +102,17 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                 ),
                 const SizedBox(height: 40),
                 
-                CustomTextField(label: 'Password', hint: 'กรอกรหัสผ่านใหม่', icon: Icons.lock_outline, controller: passwordController),
+                // 📍 เปลี่ยนรหัสผ่าน
+                CustomTextField(
+                  label: 'Password', 
+                  hint: 'กรอกรหัสผ่านใหม่เพื่อเปลี่ยน', 
+                  icon: Icons.lock_outline, 
+                  controller: passwordController,
+                  isPassword: true,
+                ),
                 const SizedBox(height: 25),
                 
+                // 📍 บันทึกวันเกิด
                 GestureDetector(
                   onTap: _selectDate,
                   child: AbsorbPointer( 
@@ -78,6 +121,7 @@ class _ProfileEditPageState extends State<ProfileEditPage> {
                 ),
                 const SizedBox(height: 25),
                 
+                // 📍 เลือกเพศ
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [

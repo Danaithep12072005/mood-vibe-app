@@ -1,54 +1,101 @@
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'package:flutter/foundation.dart';
 
 class ApiService {
-  // 📍 แก้ไข: เติม http:// และ :3000/api ให้ครบ ฟังก์ชันถึงจะยิงทะลุไปหา Node.js ได้
-  static const String baseUrl = 'http://172.16.0.2:3000/api';
+  static final FirebaseAuth _auth = FirebaseAuth.instance;
+  static final FirebaseFirestore _firestore = FirebaseFirestore.instance;
 
-  // 🌟 ฟังก์ชันดึงข้อมูลอารมณ์ทั้งหมด
-  static Future<List<dynamic>> fetchMoods() async {
+  static Future<bool> login(String email, String password) async {
     try {
-      final response = await http.get(Uri.parse('$baseUrl/moods'));
-      if (response.statusCode == 200) {
-        return json.decode(response.body);
-      } else {
-        print('พังจ้า โค้ด: ${response.statusCode}');
-        return [];
-      }
-    } catch (e) {
-      print('เชื่อมต่อเซิร์ฟเวอร์ไม่ได้: $e');
-      return [];
-    }
+      await _auth.signInWithEmailAndPassword(email: email, password: password);
+      return true;
+    } catch (e) { return false; }
   }
 
-  // 🌟 ฟังก์ชันบันทึกข้อมูลอารมณ์ (ยิงไปหา Node.js)
+  static Future<bool> register(String email, String password) async {
+    try {
+      await _auth.createUserWithEmailAndPassword(email: email, password: password);
+      return true;
+    } catch (e) { return false; }
+  }
+
+  static Future<Map<String, dynamic>?> getUserProfile() async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return null;
+      final doc = await _firestore.collection('users').doc(user.uid).get();
+      return doc.data();
+    } catch (e) { return null; }
+  }
+
+  static Future<bool> updateUserProfile({String? dob, String? gender, String? avatarPath}) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return false;
+      Map<String, dynamic> data = {};
+      if (dob != null) data['dob'] = dob;
+      if (gender != null) data['gender'] = gender;
+      if (avatarPath != null) data['avatarPath'] = avatarPath;
+      await _firestore.collection('users').doc(user.uid).set(data, SetOptions(merge: true));
+      return true;
+    } catch (e) { return false; }
+  }
+
+  static Future<bool> updatePassword(String newPassword) async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return false;
+      await user.updatePassword(newPassword);
+      return true;
+    } catch (e) { return false; }
+  }
+
   static Future<bool> saveMood(int moodIndex, String topic, String detail) async {
     try {
-      final response = await http.post(
-        Uri.parse('$baseUrl/moods'),
-        headers: {'Content-Type': 'application/json'},
-        body: json.encode({
-          'mood_index': moodIndex,
-          'topic': topic,
-          'detail': detail,
-        }),
-      );
-      return response.statusCode == 200;
+      final user = _auth.currentUser;
+      if (user == null) return false;
+      await _firestore.collection('moods').add({
+        'uid': user.uid,
+        'email': user.email,
+        'mood_index': moodIndex,
+        'topic': topic,
+        'detail': detail,
+        'timestamp': FieldValue.serverTimestamp(),
+      });
+      return true;
+    } catch (e) { return false; }
+  }
+
+  static Future<bool> updateMood(String docId, int moodIndex, String topic, String detail) async {
+    try {
+      await _firestore.collection('moods').doc(docId).update({
+        'mood_index': moodIndex,
+        'topic': topic,
+        'detail': detail,
+      });
+      return true;
+    } catch (e) { return false; }
+  }
+
+  static Future<List<Map<String, dynamic>>> fetchMoodHistory() async {
+    try {
+      final user = _auth.currentUser;
+      if (user == null) return [];
+      final querySnapshot = await _firestore
+          .collection('moods')
+          .where('uid', isEqualTo: user.uid)
+          .orderBy('timestamp', descending: true)
+          .limit(50)
+          .get();
+      return querySnapshot.docs.map((doc) {
+        var data = doc.data();
+        data['id'] = doc.id;
+        return data;
+      }).toList();
     } catch (e) {
-      print('บันทึกข้อมูลไม่ได้: $e');
-      return false; // ถึง Error ก็ไม่เป็นไร ให้ผ่านไปหน้าต่อไปได้
+      debugPrint('Fetch Error: $e'); 
+      return [];
     }
-  }
-
-  // 🌟 ฟังก์ชันจำลอง Login (Mock Auth)
-  static Future<bool> login(String email, String password) async {
-    await Future.delayed(const Duration(milliseconds: 800)); // หน่วงเวลาให้ดูสมจริง
-    return true; // บังคับให้ล็อกอินผ่านเสมอสำหรับการทดสอบ UI
-  }
-
-  // 🌟 ฟังก์ชันจำลอง Register
-  static Future<bool> register(String email, String password) async {
-    await Future.delayed(const Duration(milliseconds: 800));
-    return true;
   }
 }

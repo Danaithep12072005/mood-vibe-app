@@ -51,15 +51,32 @@ class SignInPage extends StatelessWidget {
                     hint: 'กรอกรหัสผ่าน...',
                     icon: Icons.lock_outline_rounded,
                     controller: passwordController,
+                    isPassword: true,
                   ),
                   const SizedBox(height: 45),
                   CustomButton(
                     text: 'เข้าสู่ระบบ',
                     onPressed: () async {
-                      // 📍 เรียกใช้ Mock Login
-                      bool success = await ApiService.login(emailController.text, passwordController.text);
-                      if (success && context.mounted) {
+                      final email = emailController.text.trim();
+                      final password = passwordController.text.trim();
+
+                      if (email.isEmpty || password.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('กรุณากรอกข้อมูลให้ครบถ้วน'), backgroundColor: Colors.orange),
+                        );
+                        return;
+                      }
+
+                      bool success = await ApiService.login(email, password);
+                      
+                      if (!context.mounted) return;
+
+                      if (success) {
                         Navigator.pushReplacementNamed(context, '/score');
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('อีเมลหรือรหัสผ่านไม่ถูกต้อง'), backgroundColor: Colors.redAccent),
+                        );
                       }
                     },
                   ),

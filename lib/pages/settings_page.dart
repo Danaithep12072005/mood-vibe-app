@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../services/api_service.dart';
 import '../utils/shared_widgets.dart';
 
 class SettingsPage extends StatefulWidget {
@@ -10,8 +12,23 @@ class SettingsPage extends StatefulWidget {
 
 class _SettingsPageState extends State<SettingsPage> {
   bool isDarkMode = false;
-  String userEmail = 'test@moodvibe.com'; // ข้อมูลจำลอง
+  String? userEmail;
   String? localAvatarPath;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUserData();
+  }
+
+  void _loadUserData() async {
+    final user = FirebaseAuth.instance.currentUser;
+    final profile = await ApiService.getUserProfile();
+    setState(() {
+      userEmail = user?.email; 
+      localAvatarPath = profile?['avatarPath']; 
+    });
+  }
 
   void _showAvatarPicker() {
     List<String> avatars = [
@@ -36,9 +53,10 @@ class _SettingsPageState extends State<SettingsPage> {
                   itemCount: avatars.length,
                   itemBuilder: (context, index) {
                     return GestureDetector(
-                      onTap: () {
+                      onTap: () async {
+                        await ApiService.updateUserProfile(avatarPath: avatars[index]);
                         setState(() => localAvatarPath = avatars[index]);
-                        Navigator.pop(context); 
+                        if (mounted) Navigator.pop(context); 
                       },
                       child: Container(
                         decoration: BoxDecoration(
@@ -81,7 +99,11 @@ class _SettingsPageState extends State<SettingsPage> {
                       children: [
                         Container(
                           decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 1.5)),
-                          child: IconButton(icon: const Icon(Icons.arrow_back_ios_new, size: 18, color: Colors.white), onPressed: () => Navigator.pop(context)),
+                          child: IconButton(
+                            icon: const Icon(Icons.arrow_back_ios_new, size: 18, color: Colors.white), 
+                            // 📍 จุดที่แก้ไข: เปลี่ยนให้บังคับกลับไปหน้าหลัก (/score) แทนการ pop 
+                            onPressed: () => Navigator.pushReplacementNamed(context, '/score')
+                          ),
                         ),
                         const SizedBox(width: 20),
                         const Text('การตั้งค่า', style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white)),
@@ -107,7 +129,7 @@ class _SettingsPageState extends State<SettingsPage> {
               ],
             ),
             const SizedBox(height: 70),
-            Text(userEmail, style: const TextStyle(color: moodVibeDarkBrown, fontWeight: FontWeight.bold, fontSize: 16)),
+            Text(userEmail ?? 'กำลังโหลด...', style: const TextStyle(color: moodVibeDarkBrown, fontWeight: FontWeight.bold, fontSize: 16)),
             const SizedBox(height: 30),
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24.0),
@@ -136,8 +158,9 @@ class _SettingsPageState extends State<SettingsPage> {
                   const SizedBox(height: 30),
                   _buildSettingTile(
                     title: 'Log Out', icon: Icons.logout,
-                    onTap: () {
-                      Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
+                    onTap: () async {
+                      await FirebaseAuth.instance.signOut();
+                      if (mounted) Navigator.pushNamedAndRemoveUntil(context, '/', (route) => false);
                     },
                     trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: moodVibeDarkBrown),
                   ),
@@ -148,6 +171,10 @@ class _SettingsPageState extends State<SettingsPage> {
           ],
         ),
       ),
+      // 📍 เพิ่มแถบล่างให้หน้าตั้งค่าเหมือนหน้าอื่นๆ
+      floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
+      floatingActionButton: const MoodVibeAddButton(),
+      bottomNavigationBar: const MoodVibeBottomNavBar(selectedIndex: 3),
     );
   }
 

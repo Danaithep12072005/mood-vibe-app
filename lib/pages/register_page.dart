@@ -54,32 +54,40 @@ class RegisterPage extends StatelessWidget {
                   const SizedBox(height: 25),
                   CustomTextField(
                     label: 'รหัสผ่าน',
-                    hint: 'กรอกรหัสผ่าน...',
+                    hint: 'ตั้งรหัสผ่าน (อย่างน้อย 6 ตัว)...',
                     icon: Icons.lock_outline_rounded,
                     controller: passwordController,
+                    isPassword: true,
                   ),
                   const SizedBox(height: 45),
                   CustomButton(
                     text: 'สมัครสมาชิก',
                     onPressed: () async {
-                      // 📍 เรียกใช้ Mock Register
-                      bool success = await ApiService.register(emailController.text, passwordController.text);
-                      if (success && context.mounted) {
+                      final email = emailController.text.trim();
+                      final password = passwordController.text.trim();
+
+                      if (email.isEmpty || password.isEmpty) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('กรุณากรอกข้อมูลให้ครบถ้วน'), backgroundColor: Colors.orange),
+                        );
+                        return;
+                      }
+
+                      bool success = await ApiService.register(email, password);
+                      
+                      if (!context.mounted) return;
+
+                      if (success) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('สมัครสมาชิกสำเร็จ!'), backgroundColor: Colors.green),
+                        );
                         Navigator.pushNamedAndRemoveUntil(context, '/score', (route) => false);
+                      } else {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(content: Text('สมัครไม่สำเร็จ กรุณาตรวจสอบอีเมลและรหัสผ่าน'), backgroundColor: Colors.redAccent),
+                        );
                       }
                     },
-                  ),
-                  const SizedBox(height: 40),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Text('มีบัญชีอยู่แล้วใช่ไหม?', style: TextStyle(color: moodVibeDarkBrown)),
-                      const SizedBox(width: 8),
-                      TextButton(
-                        onPressed: () => Navigator.pop(context),
-                        child: const Text('เข้าสู่ระบบ', style: TextStyle(color: moodVibeAccent, fontWeight: FontWeight.bold)),
-                      ),
-                    ],
                   ),
                 ],
               ),

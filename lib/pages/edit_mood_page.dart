@@ -2,16 +2,18 @@ import 'package:flutter/material.dart';
 import '../services/api_service.dart';
 import '../utils/shared_widgets.dart';
 
-class EmotionDetailPage extends StatefulWidget {
-  const EmotionDetailPage({super.key});
+class EditMoodPage extends StatefulWidget {
+  const EditMoodPage({super.key});
   @override
-  State<EmotionDetailPage> createState() => _EmotionDetailPageState();
+  State<EditMoodPage> createState() => _EditMoodPageState();
 }
 
-class _EmotionDetailPageState extends State<EmotionDetailPage> {
+class _EditMoodPageState extends State<EditMoodPage> {
   int selectedMoodIndex = 0; 
+  String docId = '';
   final TextEditingController _topicController = TextEditingController();
   final TextEditingController _detailController = TextEditingController();
+
   final List<Map<String, dynamic>> moods = [
     {'color': Color(0xFF9B8AF4), 'icon': Icons.sentiment_very_dissatisfied, 'label': 'รู้สึกแย่มาก'}, 
     {'color': Color(0xFFFF8B53), 'icon': Icons.sentiment_dissatisfied, 'label': 'เศร้า'},      
@@ -23,8 +25,13 @@ class _EmotionDetailPageState extends State<EmotionDetailPage> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    final args = ModalRoute.of(context)?.settings.arguments;
-    if (args != null && args is int) selectedMoodIndex = args;
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    if (args != null && docId.isEmpty) {
+      docId = args['id'] ?? '';
+      selectedMoodIndex = args['mood_index'] ?? 0;
+      _topicController.text = args['topic'] ?? '';
+      _detailController.text = args['detail'] ?? '';
+    }
   }
 
   @override
@@ -48,10 +55,10 @@ class _EmotionDetailPageState extends State<EmotionDetailPage> {
                 children: [
                   Container(
                     decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: moodVibeDarkBrown, width: 1.5)),
-                    child: IconButton(icon: const Icon(Icons.arrow_back_ios_new, size: 18, color: moodVibeDarkBrown), onPressed: () => Navigator.pushReplacementNamed(context, '/score')),
+                    child: IconButton(icon: const Icon(Icons.arrow_back_ios_new, size: 18, color: moodVibeDarkBrown), onPressed: () => Navigator.pop(context)),
                   ),
                   const SizedBox(width: 15),
-                  const Text('บันทึกสาเหตุอารมณ์', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: moodVibeDarkBrown)),
+                  const Text('แก้ไขบันทึกอารมณ์', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: moodVibeDarkBrown)),
                 ],
               ),
               const SizedBox(height: 40),
@@ -90,12 +97,12 @@ class _EmotionDetailPageState extends State<EmotionDetailPage> {
               ),
               const SizedBox(height: 40),
               CustomButton(
-                text: 'กดยืนยันเพื่อวิเคราะห์',
+                text: 'บันทึกการแก้ไข',
                 onPressed: () async {
-                  bool isSaved = await ApiService.saveMood(selectedMoodIndex, _topicController.text, _detailController.text);
-                  if (!context.mounted) return;
-                  if (isSaved) {
-                    Navigator.pushNamed(context, '/ai_chat', arguments: {'mood': moods[selectedMoodIndex]['label'], 'topic': _topicController.text, 'detail': _detailController.text});
+                  if (docId.isEmpty) return;
+                  bool isUpdated = await ApiService.updateMood(docId, selectedMoodIndex, _topicController.text, _detailController.text);
+                  if (mounted && isUpdated) {
+                    Navigator.pop(context);
                   }
                 },
               ),

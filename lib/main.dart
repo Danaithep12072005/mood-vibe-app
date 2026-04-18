@@ -11,6 +11,8 @@ import 'pages/emotion_detail_page.dart';
 import 'pages/ai_chat_page.dart';
 import 'pages/register_page.dart';
 import 'pages/edit_mood_page.dart';
+import 'pages/playlist_page.dart';
+import 'pages/music_player_page.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -44,6 +46,8 @@ class MyApp extends StatelessWidget {
         '/settings': (context) => const SettingsPage(),
         '/profile_edit': (context) => const ProfileEditPage(),
         '/edit_mood': (context) => const EditMoodPage(),
+        '/playlist': (context) => const PlaylistPage(),
+        '/music_player': (context) => const MusicPlayerPage(),
       },
     );
   }

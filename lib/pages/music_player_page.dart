@@ -1,51 +1,68 @@
 import 'package:flutter/material.dart';
+import 'package:youtube_player_flutter/youtube_player_flutter.dart';
 import '../utils/shared_widgets.dart';
 
-class MusicPlayerPage extends StatelessWidget {
-  final String trackName;
-  final String artistName;
-  final String imageUrl;
-  final String? previewUrl;
+class MusicPlayerPage extends StatefulWidget {
+  const MusicPlayerPage({super.key});
+  @override
+  State<MusicPlayerPage> createState() => _MusicPlayerPageState();
+}
 
-  const MusicPlayerPage({
-    super.key, 
-    required this.trackName, 
-    required this.artistName, 
-    required this.imageUrl,
-    this.previewUrl,
-  });
+class _MusicPlayerPageState extends State<MusicPlayerPage> {
+  late YoutubePlayerController _controller;
+  String songTitle = 'กำลังโหลด...';
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final args = ModalRoute.of(context)?.settings.arguments as Map<String, dynamic>?;
+    if (args != null) {
+      songTitle = args['title'] ?? 'เพลงแนะนำ';
+      String videoId = args['youtubeId'] ?? 'dQw4w9WgXcQ'; // รับ ID มาเล่นวิดีโอ
+      
+      _controller = YoutubePlayerController(
+        initialVideoId: videoId,
+        flags: const YoutubePlayerFlags(autoPlay: true, mute: false),
+      );
+    }
+  }
+
+  @override
+  void dispose() {
+    _controller.dispose();
+    super.dispose();
+  }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: moodVibeOlive,
+      backgroundColor: moodVibeDarkBrown,
       body: SafeArea(
         child: Column(
           children: [
             Padding(
-              padding: const EdgeInsets.all(20),
-              child: Align(
-                alignment: Alignment.centerLeft,
-                child: IconButton(
-                  icon: const Icon(Icons.arrow_back_ios, color: Colors.white),
-                  onPressed: () => Navigator.pop(context),
-                ),
+              padding: const EdgeInsets.all(20.0),
+              child: Row(children: [IconButton(icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white), onPressed: () => Navigator.pop(context)), const SizedBox(width: 15), const Text('กลับสู่เพลย์ลิสต์', style: TextStyle(color: Colors.white, fontSize: 18, fontWeight: FontWeight.bold))]),
+            ),
+            const SizedBox(height: 20),
+            // แสดงผลวิดีโอ YouTube ในหน้าเล่นเพลง
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 20),
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(20),
+                child: YoutubePlayer(controller: _controller, showVideoProgressIndicator: true),
               ),
             ),
-            const Spacer(),
-            const Icon(Icons.music_off, size: 80, color: Colors.white),
-            const SizedBox(height: 20),
-            const Text(
-              "โหมดทดสอบ Minimal Test",
-              style: TextStyle(fontSize: 24, fontWeight: FontWeight.bold, color: Colors.white),
+            const SizedBox(height: 40),
+            Padding(
+              padding: const EdgeInsets.symmetric(horizontal: 40),
+              child: Text(songTitle, textAlign: TextAlign.center, style: const TextStyle(fontSize: 22, fontWeight: FontWeight.bold, color: Colors.white)),
             ),
+            const Spacer(),
+            const Icon(Icons.spa_rounded, color: Colors.white54, size: 50),
             const SizedBox(height: 10),
-            const Text(
-              "ปิดระบบเสียงชั่วคราวเพื่อทดสอบ Firebase\nถ้าคุณเข้ามาถึงหน้านี้ได้... แปลว่าแอปรันผ่านแล้ว 100%!",
-              textAlign: TextAlign.center,
-              style: TextStyle(fontSize: 16, color: Colors.white70, height: 1.5),
-            ),
-            const Spacer(),
+            const Text('MoodVibe กำลังเล่นเพลงฮีลใจให้คุณ...', style: TextStyle(color: Colors.white54)),
+            const SizedBox(height: 60),
           ],
         ),
       ),

@@ -49,7 +49,7 @@ class _AiChatPageState extends State<AiChatPage> {
   @override
   void initState() {
     super.initState();
-    const apiKey = 'AQ.Ab8RN6KLcW1UKpOIirQQ3c2INQNWbNfuNvsUXTox3BGlvx9tqA';
+    const apiKey = '';
     _model = GenerativeModel(
       // 🟢 แก้ไขบรรทัดนี้ จาก 2.5 เป็น 1.5 ครับ
       model: 'gemini-2.5-flash', 

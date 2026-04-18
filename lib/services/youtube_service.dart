@@ -3,7 +3,7 @@ import 'package:http/http.dart' as http;
 
 class YoutubeService {
   // ⚠️ เอา API Key ที่ก๊อปมาแปะตรงนี้ครับ
-  static const String apiKey = 'AIzaSyCy3DFt52ABQCH43blOEruLJ9vQjz8HgVM'; 
+  static const String apiKey = ''; 
 
   static Future<List<Map<String, String>>> getPlaylistItems(String playlistId) async {
     final String url = 

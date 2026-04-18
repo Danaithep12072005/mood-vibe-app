@@ -11,7 +11,6 @@ class SettingsPage extends StatefulWidget {
 }
 
 class _SettingsPageState extends State<SettingsPage> {
-  bool isDarkMode = false;
   String? userEmail;
   String? localAvatarPath;
 
@@ -101,7 +100,6 @@ class _SettingsPageState extends State<SettingsPage> {
                           decoration: BoxDecoration(shape: BoxShape.circle, border: Border.all(color: Colors.white, width: 1.5)),
                           child: IconButton(
                             icon: const Icon(Icons.arrow_back_ios_new, size: 18, color: Colors.white), 
-                            // 📍 จุดที่แก้ไข: เปลี่ยนให้บังคับกลับไปหน้าหลัก (/score) แทนการ pop 
                             onPressed: () => Navigator.pushReplacementNamed(context, '/score')
                           ),
                         ),
@@ -142,19 +140,6 @@ class _SettingsPageState extends State<SettingsPage> {
                     title: 'ข้อมูลส่วนตัว', icon: Icons.person_outline, 
                     onTap: () => Navigator.pushNamed(context, '/profile_edit'), trailing: const Icon(Icons.arrow_forward_ios, size: 16, color: moodVibeDarkBrown),
                   ),
-                  const SizedBox(height: 15),
-                  _buildSettingTile(
-                    title: 'Dark Mode', icon: Icons.dark_mode_outlined, onTap: () {},
-                    trailing: Switch(
-                      value: isDarkMode,
-                      thumbColor: WidgetStateProperty.all(moodVibeOlive),
-                      trackColor: WidgetStateProperty.resolveWith((states) {
-                        if (states.contains(WidgetState.selected)) return moodVibeOlive.withValues(alpha: 0.5);
-                        return null;
-                      }),
-                      onChanged: (value) => setState(() => isDarkMode = value),
-                    ),
-                  ),
                   const SizedBox(height: 30),
                   _buildSettingTile(
                     title: 'Log Out', icon: Icons.logout,
@@ -171,7 +156,6 @@ class _SettingsPageState extends State<SettingsPage> {
           ],
         ),
       ),
-      // 📍 เพิ่มแถบล่างให้หน้าตั้งค่าเหมือนหน้าอื่นๆ
       floatingActionButtonLocation: FloatingActionButtonLocation.centerDocked,
       floatingActionButton: const MoodVibeAddButton(),
       bottomNavigationBar: const MoodVibeBottomNavBar(selectedIndex: 3),

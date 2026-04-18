@@ -17,31 +17,30 @@ class _AiChatPageState extends State<AiChatPage> {
   late final GenerativeModel _model;
   late final ChatSession _chat;
 
-  // 🔴 ข้อมูลเพลย์ลิสต์ครบ 5 อารมณ์ พร้อม YouTube Playlist ID ของจริงที่เล่นได้ชัวร์
   final Map<String, Map<String, dynamic>> playlistMap = {
     '[VERY_SAD]': {
       'name': 'โอบกอดในวันที่แตกสลาย',
-      'playlistId': 'RDFp8pc3F3rrE', // ตัวอย่างเพลย์ลิสต์เศร้า
+      'playlistId': 'GGHCHAwKfGk&list=OLAK5uy_kHx0--474MDRH9KwxQoSXeGeC-NggpVSs',
       'description': 'สำหรับวันที่ใจพังที่สุด ให้เพลงอยู่เป็นเพื่อนนะ',
     },
     '[SAD]': {
       'name': 'พื้นที่สำหรับคนเศร้า',
-      'playlistId': 'RDFp8pc3F3rrE', 
+      'playlistId': 'OLAK5uy_mIbPWnivfKgExBt_VMFHq0Tdgitoi7ARg', 
       'description': 'ปล่อยใจไปกับทำนองช้าๆ ในวันที่ฝนตกในใจ',
     },
     '[NORMAL]': {
       'name': 'วันธรรมดาที่แสนพิเศษ',
-      'playlistId': 'RDFp8pc3F3rrE', // เพลย์ลิสต์ Lofi นั่งชิล
+      'playlistId': 'OLAK5uy_k-f6g3eY_7wTIva7v7J4FlJCXo_TJ7amQ',
       'description': 'เพลงฟังสบายๆ เพิ่มพลังงานบวก',
     },
     '[HAPPY]': {
       'name': 'เติมความสดใสให้เต็มร้อย',
-      'playlistId': 'RDFp8pc3F3rrE', 
+      'playlistId': 'OLAK5uy_kdXmVQM5F_m0OlzAqqG_fqJJGHiL4A-nc', 
       'description': 'ดนตรีจังหวะน่ารักๆ สำหรับคนที่มีรอยยิ้ม',
     },
     '[VERY_HAPPY]': {
       'name': 'โลกสดใสแจ่มใสที่สุด',
-      'playlistId': 'RDFp8pc3F3rrE', 
+      'playlistId': 'OLAK5uy_lRytWBMKxAXnL8CPcvcaP15urnSll42ME', 
       'description': 'ดีใจด้วยนะ! มาฉลองความสุขนี้กัน',
     },
   };
@@ -51,7 +50,6 @@ class _AiChatPageState extends State<AiChatPage> {
     super.initState();
     const apiKey = '';
     _model = GenerativeModel(
-      // 🟢 แก้ไขบรรทัดนี้ จาก 2.5 เป็น 1.5 ครับ
       model: 'gemini-2.5-flash', 
       apiKey: apiKey,
       systemInstruction: Content.system('คุณคือ MoodVibe ที่ปรึกษาที่อบอุ่น กฎ: วิเคราะห์อารมณ์แล้วปิดท้ายด้วย Tag [VERY_SAD], [SAD], [NORMAL], [HAPPY], หรือ [VERY_HAPPY] เพียง 1 อันเสมอ'),
@@ -75,7 +73,6 @@ class _AiChatPageState extends State<AiChatPage> {
     String userText = autoMessage ?? _textController.text;
     if (userText.trim().isEmpty) return;
     
-    // เคลียร์ช่องแชทอัตโนมัติ
     if (autoMessage == null) {
       _textController.clear();
     }
@@ -94,7 +91,6 @@ class _AiChatPageState extends State<AiChatPage> {
       });
       _scrollToBottom();
     } catch (e) { 
-      // 🚨 ถ้า AI พัง จะแจ้ง Error ในหน้าแชทเลย
       print("🚨 Gemini Error: $e");
       setState(() { 
         isAiTyping = false; 
@@ -142,7 +138,10 @@ class _AiChatPageState extends State<AiChatPage> {
       ),
       child: Row(
         children: [
-          IconButton(icon: const Icon(Icons.arrow_back_ios_new), onPressed: () => Navigator.pop(context)), 
+          IconButton(
+            icon: const Icon(Icons.arrow_back_ios_new), 
+            onPressed: () => Navigator.pushNamedAndRemoveUntil(context, '/score', (route) => false)
+          ), 
           const SizedBox(width: 15), 
           const Text('AI วิเคราะห์อารมณ์', style: TextStyle(fontSize: 22, fontWeight: FontWeight.bold))
         ]
@@ -190,7 +189,6 @@ class _AiChatPageState extends State<AiChatPage> {
                   ),
                   icon: const Icon(Icons.headphones),
                   label: Text('เปิดเพลย์ลิสต์: ${playlistMap[foundTag]!['name']}'),
-                  // ส่ง Playlist ID ไปยังหน้า playlist_page
                   onPressed: () => Navigator.pushNamed(context, '/playlist', arguments: playlistMap[foundTag]),
                 ),
               ),
